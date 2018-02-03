@@ -3,6 +3,7 @@ package ifmo.jackalope;
 import com.tuneit.jackalope.dict.wiki.engine.core.Gloss;
 import com.tuneit.jackalope.dict.wiki.engine.core.SenseOption;
 import com.tuneit.jackalope.dict.wiki.engine.core.WikiSense;
+import org.apache.commons.lang3.time.StopWatch;
 import org.neo4j.driver.v1.*;
 
 import java.util.ArrayList;
@@ -32,10 +33,19 @@ public class App implements AutoCloseable {
         try (App app = new App("bolt://localhost:7687", "admin", "admin")) {
             try (Session session = app.driver.session()) {
                 SnapshotLoader wiki = new SnapshotLoader(args[0]);
+                StopWatch watch = StopWatch.createStarted();
                 Collection<WikiSense> senses = wiki.get_senses();
+                System.out.println(String.format("Export to neo4j started. %d nodes to export.", senses.size()));
+                int count = 0, divider = 1000;
                 for (WikiSense sense : senses) {
                     app.export_sense_options_loop(session, sense);
+                    count++;
+                    if (count % divider == 0) {
+                        System.out.println(String.format("%d senses exported %s.", count, watch));
+                    }
                 }
+                watch.stop();
+                System.out.println(String.format("Export %d nodes from %d took %s", count, senses.size(), watch));
             }
         }
     }
