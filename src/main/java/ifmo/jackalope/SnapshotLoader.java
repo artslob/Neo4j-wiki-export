@@ -26,9 +26,22 @@ public class SnapshotLoader {
         System.out.println("Snapshot opened for " + watch);
     }
 
+    public WiktionarySnapshot getSnapshot(){
+        return snapshot;
+    }
+
     public static void main(String[] args) {
         SnapshotLoader test = new SnapshotLoader(args[0]);
-        WikiSense sense = test.get_test_sense();
+        Collection<WikiSense> senses = test.get_senses();
+        int i = 0;
+        for (WikiSense sense : senses) {
+            if (!sense.getLinks().isEmpty()) {
+                System.out.println(sense);
+            } else {
+                i++;
+            }
+        }
+        System.out.println(senses.size() + " " + i);
     }
 
     WikiSense get_test_sense() {
